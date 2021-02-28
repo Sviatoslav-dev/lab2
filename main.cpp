@@ -1,6 +1,5 @@
 #include<iostream>
 #include<fstream>
-#include<string>
 #include<vector>
 
 using namespace std;
@@ -8,132 +7,123 @@ using namespace std;
 class student {
 public:
     string name;
-    int mark[5];
+    float mark[5];
     bool is_cont;
-    int rating;
+    float rating;
 
     void output () {
-        cout << name << ";"<< mark[0] << ";"<< mark[1] << ";"<< mark[2] << ";"<< mark[3] << ";"<< mark[4] << ";"<< rating << endl;
+        cout << name << ";"<< mark[0] << ";"<< mark[1] << ";"<< mark[2] << 
+            ";"<< mark[3] << ";"<< mark[4] << ";"<< rating << endl;
     }
 };
 
-void get_students(ifstream &a, vector<student>& st) {
+void get_students(ifstream &file, vector<student>& st) {
 
-    string s;
-    string b;
-    student p;
+    string cell, line;
+    student new_st;
 
-    getline(a, b);
+    getline(file, line);
 
-    int n = 0;
-
-    while (!a.eof())
+    while (!file.eof())
     {
-        s = "";
-        if (a.is_open()) {
-            getline(a, b);
+        cell = "";
+        if (file.is_open()) {
+            getline(file, line);
 
-            //cout << b << endl;
+            for (int i = 0, k = 0; i < line.size(); i++) {
+                if (line[i] == ',') {
 
-            for (int i = 0, k = 0; i < b.size(); i++) {
-                if (b[i] == ',') {
-                    switch (k)
-                    {
-                        case 0:
-                            p.name = s;
-                        break;
-
-                        case 1:
-                        case 2:
-                        case 3:
-                        case 4:
-                        case 5:
-                            p.mark[k-1] = stoi(s);
-                            if (b[i+1] == 'T') {
-                                p.is_cont = 1;
+                    if (k == 0) {
+                        new_st.name = cell;
+                    } else if (k < 5) {
+                        new_st.mark[k-1] = stoi(cell);
+                    } else {
+                        new_st.mark[k-1] = stoi(cell);
+                            if (line[i+1] == 'T') {
+                                new_st.is_cont = 1;
                             }
                             else {
-                                p.is_cont = 0;
+                                new_st.is_cont = 0;
                             }
-                        break;
-                    
-                    default:
-                        break;
                     }
                     k++;
-                    s = "";
+                    cell = "";
                 } else {
-                    s += b[i];
+                    cell += line[i];
                 }
             }
-            if (!p.is_cont) {
-                p.rating = (p.mark[0] + p.mark[1] + p.mark[2] + p.mark[3] + p.mark[4]) / 5;
+
+            if (!new_st.is_cont) {
+                new_st.rating = (new_st.mark[0] + new_st.mark[1] + new_st.mark[2] + new_st.mark[3] + new_st.mark[4]) / 5;
             } else {
-                p.rating = 0;
+                new_st.rating = 0;
             }
         }
 
-        //p.output();
-
-        st.push_back(p);
-        n++;
+        st.push_back(new_st);
     }
 }
 
-void input_st2 (vector<student>& a1, vector<student>& a2) {
-    for (int i = 0; i < a1.size(); i++) {
-        if (a1[i].rating != 0) {
-            a2.push_back(a1[i]);
-            //a1[i].output();
+void input_st2 (vector<student>& st, vector<student>& st2) {
+    for (int i = 0; i < st.size(); i++) {
+        if (st[i].rating != 0) {
+            st2.push_back(st[i]);
         }
     }
 }
 
-void sort_st (vector<student>& a) {
+void sort_st (vector<student>& st) {
     student d;
     int was_changed = true;
 
     while (was_changed) {
         was_changed = false;
-        for (int i = 1; i < a.size(); i++) {
-            if (a[i - 1].rating < a[i].rating) {
-                d = a[i - 1];
-                a[i - 1] = a[i];
-                a[i] = d;
+        for (int i = 1; i < st.size(); i++) {
+            if (st[i - 1].rating < st[i].rating) {
+                d = st[i - 1];
+                st[i - 1] = st[i];
+                st[i] = d;
                 was_changed = true;
             }
         }
     }
 }
 
-int out_vec(vector<student>& a) {
+int scholarship(vector<student>& st, ofstream & res) {
 
-    int n = 0.4 * a.size();
+    int n = 0.4 * st.size(), min;
 
     for (int i = 0; i < n; i++) {
-        a[i].output();
+        res << st[i].name << "," << st[i].rating << endl;
+        min = st[i].rating;
     }
 
-    return n;
+    return min;
 }
 
 int main () {
-    ifstream a, b;
-    vector<student> st;
-    vector<student> st2;
+    string dir;
+    ifstream file1, file2;
+    ofstream res;
+    vector<student> st, st2;
 
-    a.open("students1.csv");
-    b.open("students2.csv");
+    cout<< "input direction name:\n";
+    getline(cin, dir);
 
-    get_students(a, st);
-    get_students(b, st);
+    file1.open(dir + "/students1.csv");
+    file2.open(dir + "/students2.csv");
+    res.open(dir + "/result.csv");
+
+    get_students(file1, st);
+    get_students(file2, st);
 
     input_st2 (st, st2);
 
     sort_st (st2);
 
-    cout << out_vec(st2) << endl;
+    cout << "minimum mark is " << scholarship(st2, res) << endl;
 
-    a.close();
-    b.close();
+    file1.close();
+    file2.close();
+    res.close();
 }
