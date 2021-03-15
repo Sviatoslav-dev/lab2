@@ -7,20 +7,23 @@ using namespace std;
 class student {
 public:
     string name;
-    float mark[5];
+    //float mark[5];
+    vector<float> mark;
+    int cout_of_mark;
     bool is_cont;
-    float rating;
+    float rating = 0;
 
-    void output () {
+    /*void output () {
         cout << name << ";"<< mark[0] << ";"<< mark[1] << ";"<< mark[2] << 
             ";"<< mark[3] << ";"<< mark[4] << ";"<< rating << endl;
-    }
+    }*/
 };
 
 void get_students(ifstream &file, vector<student>& st) {
 
     string cell, line;
     student new_st;
+    int comas;
 
     getline(file, line);
 
@@ -30,15 +33,24 @@ void get_students(ifstream &file, vector<student>& st) {
         if (file.is_open()) {
             getline(file, line);
 
+            comas = 0;
+
+            for (int i = 0, k = 0; i < line.size(); i++) {
+                if (line[i] == ',')
+                    comas++;
+            }
+
+            new_st.cout_of_mark = comas - 1;
+
             for (int i = 0, k = 0; i < line.size(); i++) {
                 if (line[i] == ',') {
 
                     if (k == 0) {
                         new_st.name = cell;
-                    } else if (k < 5) {
-                        new_st.mark[k-1] = stoi(cell);
+                    } else if (k < new_st.cout_of_mark) {
+                        new_st.mark.push_back(stoi(cell));
                     } else {
-                        new_st.mark[k-1] = stoi(cell);
+                        new_st.mark.push_back(stoi(cell));
                             if (line[i+1] == 'T') {
                                 new_st.is_cont = 1;
                             }
@@ -54,13 +66,22 @@ void get_students(ifstream &file, vector<student>& st) {
             }
 
             if (!new_st.is_cont) {
-                new_st.rating = (new_st.mark[0] + new_st.mark[1] + new_st.mark[2] + new_st.mark[3] + new_st.mark[4]) / 5;
+                //new_st.rating = (new_st.mark[0] + new_st.mark[1] + new_st.mark[2] + new_st.mark[3] + new_st.mark[4]) / 5;
+                int sum = 0;
+
+                for (int i = 0; i < new_st.cout_of_mark; i++) {
+                    sum += new_st.mark[i];
+                }
+
+                new_st.rating = sum / new_st.cout_of_mark;
+
             } else {
                 new_st.rating = 0;
             }
         }
 
         st.push_back(new_st);
+        new_st.mark.clear();
     }
 }
 
